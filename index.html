@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard OEE - Preparatory PKW</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0f172a',
+                        secondary: '#1e293b',
+                        accent: {
+                            blue: '#3b82f6',
+                            orange: '#f97316',
+                            green: '#10b981',
+                            purple: '#8b5cf6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #09430f; 
+            color: #334155;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .toggle-btn { transition: all 0.3s ease; }
+        .toggle-btn.inactive { filter: grayscale(100%); opacity: 0.4; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-6 lg:p-8 min-h-screen flex flex-col gap-6">
+
+    <div class="max-w-[1400px] w-full mx-auto space-y-6">
+        
+        <header class="bg-black/20 backdrop-blur-md rounded-2xl shadow-xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center text-white relative overflow-hidden border border-white/10">
+            <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10 blur-3xl"></div>
+            
+            <div class="relative z-10">
+                <h1 class="text-3xl font-extrabold tracking-tight mb-1">Dashboard OEE</h1>
+                <p class="text-slate-300 font-medium mb-2">Laporan Progress Departemen Preparatory PKW</p>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/10 border border-white/10 text-xs text-slate-200 font-medium shadow-sm backdrop-blur-sm">
+                    <svg class="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Terakhir diperbarui: 21 November 2026 (Data OEE terakhir : 20 November 2026)
+                </div>
+            </div>
+            
+            <div class="mt-6 md:mt-0 relative z-10 flex flex-col sm:flex-row gap-4 items-center w-full md:w-auto">
+                <!-- Filter Mesin -->
+                <div class="bg-white/10 p-1 rounded-lg backdrop-blur-sm border border-white/20 flex items-center gap-2 px-3 py-2 w-full sm:w-auto">
+                    <svg class="w-5 h-5 text-slate-300 min-w-[20px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <select id="mcFilter" onchange="applyFilters()" class="bg-transparent text-white font-semibold outline-none cursor-pointer appearance-none pr-4 w-full">
+                        <option value="ALL" class="text-slate-800" selected>Semua Mesin (Dept)</option>
+                        <option value="AG800A" class="text-slate-800">AG800A</option>
+                        <option value="AG800B" class="text-slate-800">AG800B</option>
+                        <option value="AG1000" class="text-slate-800">AG1000</option>
+                        <option value="IZUMI 1" class="text-slate-800">IZUMI 1</option>
+                        <option value="IZUMI 2" class="text-slate-800">IZUMI 2</option>
+                        <option value="KAOGIN" class="text-slate-800">KAOGIN</option>
+                        <option value="IH-CHING" class="text-slate-800">IH-CHING</option>
+                    </select>
+                </div>
+
+                <!-- Filter Tahun -->
+                <div class="bg-white/10 p-1 rounded-lg backdrop-blur-sm border border-white/20 flex items-center gap-2 px-3 py-2 w-full sm:w-auto">
+                    <svg class="w-5 h-5 text-slate-300 min-w-[20px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <select id="yearFilter" onchange="applyFilters()" class="bg-transparent text-white font-semibold outline-none cursor-pointer appearance-none pr-4 w-full">
+                        <option value="ALL" class="text-slate-800">Semua Tahun (2024-2026)</option>
+                        <option value="2024" class="text-slate-800">Data Tahun 2024</option>
+                        <option value="2025" class="text-slate-800">Data Tahun 2025</option>
+                        <option value="2026" class="text-slate-800" selected>Data Tahun 2026</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <nav class="glass-card rounded-2xl p-2 flex flex-col md:flex-row gap-2 shadow-sm sticky top-4 z-50">
+            <button onclick="switchTab('oee')" id="nav-oee" class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-white bg-accent-blue shadow-md flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                OEE Performance
+            </button>
+            <button onclick="switchTab('pareto')" id="nav-pareto" class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-slate-500 hover:bg-slate-100 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                Pareto Analysis
+            </button>
+            <button onclick="switchTab('mtbf')" id="nav-mtbf" class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-slate-500 hover:bg-slate-100 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                MTBF, MTTR & PROD
+            </button>
+        </nav>
+
+        <div id="tab-oee" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div class="glass-card rounded-2xl p-6 border-t-4 border-t-accent-blue relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-accent-blue/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <p class="text-sm font-semibold text-slate-500 mb-1">Rata-rata OEE</p>
+                    <div class="flex items-end gap-2">
+                        <h2 class="text-3xl md:text-4xl font-bold text-accent-blue" id="kpi-oee">0.00%</h2>
+                    </div>
+                </div>
+                
+                <div class="glass-card rounded-2xl p-6 border-t-4 border-t-accent-orange relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-accent-orange/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <p class="text-sm font-semibold text-slate-500 mb-1">Rata-rata Availability</p>
+                    <div class="flex items-end gap-2">
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800" id="kpi-a">0.00%</h2>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 border-t-4 border-t-accent-green relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-accent-green/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <p class="text-sm font-semibold text-slate-500 mb-1">Rata-rata Performance</p>
+                    <div class="flex items-end gap-2">
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800" id="kpi-p">0.00%</h2>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 border-t-4 border-t-accent-purple relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-accent-purple/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <p class="text-sm font-semibold text-slate-500 mb-1">Rata-rata Quality</p>
+                    <div class="flex items-end gap-2">
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800" id="kpi-q">0.00%</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Tren Pencapaian <span id="chart-title-year">2026</span></h3>
+                        <p class="text-sm text-slate-500">Klik tombol di bawah untuk menampilkan/menyembunyikan garis grafik.</p>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="toggleLine(0)" id="btn-0" class="toggle-btn active px-4 py-2 rounded-lg text-sm font-bold bg-blue-50 text-accent-blue border border-accent-blue shadow-sm hover:bg-blue-100">
+                            OEE
+                        </button>
+                        <button onclick="toggleLine(1)" id="btn-1" class="toggle-btn active px-4 py-2 rounded-lg text-sm font-bold bg-orange-50 text-accent-orange border border-accent-orange shadow-sm hover:bg-orange-100">
+                            Availability
+                        </button>
+                        <button onclick="toggleLine(2)" id="btn-2" class="toggle-btn active px-4 py-2 rounded-lg text-sm font-bold bg-green-50 text-accent-green border border-accent-green shadow-sm hover:bg-green-100">
+                            Performance
+                        </button>
+                        <button onclick="toggleLine(3)" id="btn-3" class="toggle-btn active px-4 py-2 rounded-lg text-sm font-bold bg-purple-50 text-accent-purple border border-accent-purple shadow-sm hover:bg-purple-100">
+                        Quality
+                    </button>
+                </div>
+            </div>
+            
+            <div class="relative w-full h-[300px] md:h-[400px] lg:h-[450px]">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tambahkan Tabel Master OEE kembali di sini -->
+        <div class="glass-card rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div class="p-6 border-b border-slate-100 bg-white">
+                <h3 class="text-xl font-bold text-slate-800">Tabel Rincian Data Master OEE</h3>
+            </div>
+            <div class="overflow-x-auto p-0 flex-1">
+                <table class="w-full text-left border-collapse" id="masterTable">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 text-sm">
+                            <th class="py-3 px-6 font-bold border-b border-slate-200">Tahun</th>
+                            <th class="py-3 px-6 font-bold border-b border-slate-200">Bulan</th>
+                            <th class="py-3 px-6 font-bold border-b border-slate-200 text-accent-orange">Availability</th>
+                            <th class="py-3 px-6 font-bold border-b border-slate-200 text-accent-green">Performance</th>
+                            <th class="py-3 px-6 font-bold border-b border-slate-200 text-accent-purple">Quality</th>
+                            <th class="py-3 px-6 font-bold border-b border-slate-200 text-accent-blue text-base">OEE</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-slate-100" id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        </div>
+
+        <div id="tab-pareto" class="hidden space-y-6">
+            <div class="glass-card rounded-2xl p-6 shadow-sm">
+                <h3 class="text-xl font-bold text-slate-800 mb-4 border-b border-slate-100 pb-4">Diagram Pareto Keseluruhan (%)</h3>
+                <div class="relative w-full h-[300px] md:h-[400px]">
+                    <canvas id="paretoChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-slate-100 bg-white">
+                    <h3 class="text-xl font-bold text-slate-800">Tabel Rincian Pareto Lengkap</h3>
+                </div>
+                <div class="overflow-x-auto p-0 flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 text-sm">
+                                <th class="py-3 px-6 font-bold border-b border-slate-200">No</th>
+                                <th class="py-3 px-6 font-bold border-b border-slate-200">Jenis Downtime</th>
+                                <th class="py-3 px-6 font-bold border-b border-slate-200 text-right">Total Menit</th>
+                                <th class="py-3 px-6 font-bold border-b border-slate-200 text-right">Persentase</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-slate-100" id="paretoTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-mtbf" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Chart MTBF & MTTR -->
+                <div class="glass-card rounded-2xl p-6 shadow-sm">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 border-b border-slate-100 pb-4">Grafik MTBF & MTTR (Jam)</h3>
+                    <div class="relative w-full h-[250px] sm:h-[300px] md:h-[350px]">
+                        <canvas id="mtbfChart"></canvas>
+                    </div>
+                </div>
+                <!-- Chart Produksi -->
+                <div class="glass-card rounded-2xl p-6 shadow-sm">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 border-b border-slate-100 pb-4">Grafik Produksi (Meter)</h3>
+                    <div class="relative w-full h-[250px] sm:h-[300px] md:h-[350px]">
+                        <canvas id="prodChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-slate-100 bg-white">
+                    <h3 class="text-xl font-bold text-slate-800">Tabel Data MTBF, MTTR & Produksi</h3>
+                </div>
+                <div class="overflow-x-auto p-0 flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 text-sm">
+                                <th class="py-3 px-6 font-bold border-b border-slate-200">Tahun</th>
+                                <th class="py-3 px-6 font-bold border-b border-slate-200">Bulan</th>
+                                <th class="py-3 px-6 font-bold border-b border-slate-200 text-right">MTBF (Jam)</th>
+                                <th class="py-3 px-6 font-bold border-b border-slate-200 text-right">MTTR (Jam)</th>
+                                <th class="py-3 px-6 font-bold border-b border-slate-200 text-right">Produksi (Meter)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-slate-100" id="mtbfTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Chart.register(ChartDataLabels);
+
+        // DATA MTBF, MTTR, PRODUKSI
+        const MTBF_DATA = [
+            { tahun: 2025, bulan: 'JANUARI', mtbf: 235.83, mttr: 0.45, prod: 265850 },
+            { tahun: 2025, bulan: 'FEBRUARI', mtbf: 148.61, mttr: 0.48, prod: 544174 },
+            { tahun: 2025, bulan: 'MARET', mtbf: 157.14, mttr: 0.49, prod: 698010 },
+            { tahun: 2025, bulan: 'APRIL', mtbf: 113.42, mttr: 0.47, prod: 375218 },
+            { tahun: 2025, bulan: 'MEI', mtbf: 540.84, mttr: 0.49, prod: 750307 },
+            { tahun: 2025, bulan: 'JUNI', mtbf: 218.84, mttr: 0.36, prod: 516720 },
+            { tahun: 2025, bulan: 'JULI', mtbf: 541.87, mttr: 0.41, prod: 660446 },
+            { tahun: 2025, bulan: 'AGUSTUS', mtbf: 604.73, mttr: 0.62, prod: 621303 },
+            { tahun: 2025, bulan: 'SEPTEMBER', mtbf: 382.70, mttr: 1.52, prod: 738594 },
+            { tahun: 2025, bulan: 'OKTOBER', mtbf: 252.98, mttr: 0.66, prod: 520031 },
+            { tahun: 2025, bulan: 'NOVEMBER', mtbf: 276.49, mttr: 0.34, prod: 779499 },
+            { tahun: 2025, bulan: 'DESEMBER', mtbf: 0.00, mttr: 0.00, prod: 796530 },
+            { tahun: 2026, bulan: 'JANUARI', mtbf: 556.75, mttr: 0.77, prod: 796530 },
+            { tahun: 2026, bulan: 'FEBRUARI', mtbf: 1016.03, mttr: 0.33, prod: 728377 },
+            { tahun: 2026, bulan: 'MARET', mtbf: 352.72, mttr: 0.58, prod: 299652 },
+            { tahun: 2026, bulan: 'APRIL', mtbf: 362.32, mttr: 0.32, prod: 642449 },
+            { tahun: 2026, bulan: 'MEI', mtbf: 301.75, mttr: 0.45, prod: 603585 },
+            { tahun: 2026, bulan: 'JUNI', mtbf: 359.60, mttr: 0.56, prod: 955767 },
+            { tahun: 2026, bulan: 'JULI', mtbf: 296.05, mttr: 0.45, prod: 1088934 },
+            { tahun: 2026, bulan: 'AGUSTUS', mtbf: 265.55, mttr: 0.46, prod: 895496 },
+            { tahun: 2026, bulan: 'SEPTEMBER', mtbf: 1221.70, mttr: 0.17, prod: 1025370 },
+            { tahun: 2026, bulan: 'OKTOBER', mtbf: 576.67, mttr: 0.44, prod: 971957 },
+            { tahun: 2026, bulan: 'NOVEMBER', mtbf: 0.00, mttr: 0.00, prod: 593280 },
+        ];
+
+        // DATA DEPARTEMEN (ALL MESIN)
+        const MASTER_DATA = [
+            // Data 2024
+            { tahun: 2024, bulan: 'JANUARI', a: 66.59, p: 91.80, q: 89.86, oee: 54.94 },
+            { tahun: 2024, bulan: 'FEBRUARI', a: 71.69, p: 95.24, q: 89.98, oee: 61.44 },
+            { tahun: 2024, bulan: 'MARET', a: 73.05, p: 98.81, q: 92.19, oee: 66.54 },
+            { tahun: 2024, bulan: 'APRIL', a: 80.59, p: 99.19, q: 93.48, oee: 74.72 },
+            { tahun: 2024, bulan: 'MEI', a: 87.95, p: 97.33, q: 94.76, oee: 81.11 },
+            { tahun: 2024, bulan: 'JUNI', a: 74.78, p: 91.02, q: 95.27, oee: 64.84 },
+            { tahun: 2024, bulan: 'JULI', a: 75.69, p: 86.44, q: 95.43, oee: 62.44 },
+            { tahun: 2024, bulan: 'AGUSTUS', a: 84.38, p: 92.63, q: 95.34, oee: 74.52 },
+            { tahun: 2024, bulan: 'SEPTEMBER', a: 78.58, p: 91.27, q: 93.81, oee: 67.28 },
+            { tahun: 2024, bulan: 'OKTOBER', a: 78.08, p: 91.31, q: 93.13, oee: 66.41 },
+            { tahun: 2024, bulan: 'NOVEMBER', a: 76.61, p: 84.71, q: 89.42, oee: 58.03 },
+            { tahun: 2024, bulan: 'DESEMBER', a: 72.26, p: 80.73, q: 89.21, oee: 52.04 },
+
+            // Data 2025
+            { tahun: 2025, bulan: 'JANUARI', a: 77.50, p: 85.10, q: 91.04, oee: 60.04 },
+            { tahun: 2025, bulan: 'FEBRUARI', a: 78.60, p: 86.63, q: 93.06, oee: 63.37 },
+            { tahun: 2025, bulan: 'MARET', a: 79.56, p: 87.92, q: 93.98, oee: 65.74 },
+            { tahun: 2025, bulan: 'APRIL', a: 78.49, p: 90.13, q: 93.09, oee: 65.85 },
+            { tahun: 2025, bulan: 'MEI', a: 79.23, p: 91.11, q: 92.83, oee: 67.01 },
+            { tahun: 2025, bulan: 'JUNI', a: 80.24, p: 90.69, q: 93.25, oee: 67.85 },
+            { tahun: 2025, bulan: 'JULI', a: 80.48, p: 92.31, q: 93.01, oee: 69.10 },
+            { tahun: 2025, bulan: 'AGUSTUS', a: 79.68, p: 93.03, q: 93.55, oee: 69.34 },
+            { tahun: 2025, bulan: 'SEPTEMBER', a: 79.65, p: 93.24, q: 94.69, oee: 70.32 },
+            { tahun: 2025, bulan: 'OKTOBER', a: 77.66, p: 95.23, q: 95.45, oee: 70.59 },
+            { tahun: 2025, bulan: 'NOVEMBER', a: 78.48, p: 93.70, q: 95.35, oee: 70.12 },
+            { tahun: 2025, bulan: 'DESEMBER', a: 79.25, p: 94.45, q: 95.48, oee: 71.46 },
+            
+            // Data 2026
+            { tahun: 2026, bulan: 'JANUARI', a: 81.10, p: 92.66, q: 95.38, oee: 71.68 },
+            { tahun: 2026, bulan: 'FEBRUARI', a: 80.34, p: 93.78, q: 95.91, oee: 72.27 },
+            { tahun: 2026, bulan: 'MARET', a: 78.70, p: 93.60, q: 94.94, oee: 69.94 },
+            { tahun: 2026, bulan: 'APRIL', a: 79.68, p: 93.99, q: 95.17, oee: 71.27 },
+            { tahun: 2026, bulan: 'MEI', a: 79.73, p: 95.07, q: 95.52, oee: 72.41 },
+            { tahun: 2026, bulan: 'JUNI', a: 80.09, p: 94.89, q: 95.40, oee: 72.50 },
+            { tahun: 2026, bulan: 'JULI', a: 79.54, p: 94.73, q: 96.26, oee: 72.53 },
+            { tahun: 2026, bulan: 'AGUSTUS', a: 79.18, p: 95.32, q: 95.93, oee: 72.40 },
+            { tahun: 2026, bulan: 'SEPTEMBER', a: 80.81, p: 93.90, q: 96.02, oee: 72.86 },
+            { tahun: 2026, bulan: 'OKTOBER', a: 78.97, p: 95.87, q: 96.29, oee: 72.90 },
+            { tahun: 2026, bulan: 'NOVEMBER', a: 79,77, p: 95,45 , q: 96.33, oee: 73.35 },
+        ];
+
+        const MACHINE_DATA = [
+            // --- DATA 2026 ---
+            { tahun: 2026, bulan: 'JANUARI', mc: 'AG800A', a: 82.23, p: 85.91, q: 95.26, oee: 67.29 },
+            { tahun: 2026, bulan: 'FEBRUARI', mc: 'AG800A', a: 81.69, p: 87.67, q: 95.99, oee: 67.96 },
+            { tahun: 2026, bulan: 'MARET', mc: 'AG800A', a: 79.26, p: 90.48, q: 94.91, oee: 68.06 },
+            { tahun: 2026, bulan: 'APRIL', mc: 'AG800A', a: 83.80, p: 88.02, q: 95.21, oee: 70.22 },
+            { tahun: 2026, bulan: 'MEI', mc: 'AG800A', a: 78.41, p: 95.27, q: 95.33, oee: 71.22 },
+            { tahun: 2026, bulan: 'JUNI', mc: 'AG800A', a: 84.80, p: 89.26, q: 95.45, oee: 72.24 },
+            { tahun: 2026, bulan: 'JULI', mc: 'AG800A', a: 85.01, p: 88.40, q: 96.22, oee: 72.31 },
+            { tahun: 2026, bulan: 'AGUSTUS', mc: 'AG800A', a: 85.06, p: 88.98, q: 96.07, oee: 72.73 },
+            { tahun: 2026, bulan: 'SEPTEMBER', mc: 'AG800A', a: 86.76, p: 86.98, q: 95.89, oee: 72.36 },
+            { tahun: 2026, bulan: 'OKTOBER', mc: 'AG800A', a: 86.41, p: 86.47, q: 96.27, oee: 71.93 },
+
+            { tahun: 2026, bulan: 'JANUARI', mc: 'IZUMI 1', a: 82.63, p: 91.35, q: 95.33, oee: 71.95 },
+            { tahun: 2026, bulan: 'FEBRUARI', mc: 'IZUMI 1', a: 80.53, p: 93.42, q: 95.90, oee: 72.15 },
+            { tahun: 2026, bulan: 'MARET', mc: 'IZUMI 1', a: 79.13, p: 92.93, q: 94.81, oee: 69.72 },
+            { tahun: 2026, bulan: 'APRIL', mc: 'IZUMI 1', a: 80.63, p: 92.22, q: 95.16, oee: 70.76 },
+            { tahun: 2026, bulan: 'MEI', mc: 'IZUMI 1', a: 80.77, p: 94.03, q: 95.51, oee: 72.54 },
+            { tahun: 2026, bulan: 'JUNI', mc: 'IZUMI 1', a: 80.33, p: 94.57, q: 95.39, oee: 72.47 },
+            { tahun: 2026, bulan: 'JULI', mc: 'IZUMI 1', a: 77.52, p: 94.93, q: 96.25, oee: 70.83 },
+            { tahun: 2026, bulan: 'AGUSTUS', mc: 'IZUMI 1', a: 79.20, p: 94.79, q: 95.93, oee: 72.02 },
+            { tahun: 2026, bulan: 'SEPTEMBER', mc: 'IZUMI 1', a: 80.29, p: 93.99, q: 96.03, oee: 72.48 },
+            { tahun: 2026, bulan: 'OKTOBER', mc: 'IZUMI 1', a: 78.12, p: 95.87, q: 96.29, oee: 72.11 },
+            { tahun: 2026, bulan: 'NOVEMBER', mc: 'IZUMI 1', a: 81,70, p: 94.47, q: 96.33, oee: 74.35 },
+
+            { tahun: 2026, bulan: 'JANUARI', mc: 'IZUMI 2', a: 79.34, p: 94.38, q: 95.43, oee: 71.46 },
+            { tahun: 2026, bulan: 'FEBRUARI', mc: 'IZUMI 2', a: 79.95, p: 94.54, q: 95.92, oee: 72.51 },
+            { tahun: 2026, bulan: 'MARET', mc: 'IZUMI 2', a: 78.22, p: 94.22, q: 94.92, oee: 69.95 },
+            { tahun: 2026, bulan: 'APRIL', mc: 'IZUMI 2', a: 78.33, p: 95.42, q: 95.17, oee: 71.13 },
+            { tahun: 2026, bulan: 'MEI', mc: 'IZUMI 2', a: 78.76, p: 95.91, q: 95.53, oee: 72.17 },
+            { tahun: 2026, bulan: 'JUNI', mc: 'IZUMI 2', a: 77.08, p: 96.78, q: 95.40, oee: 71.17 },
+            { tahun: 2026, bulan: 'JULI', mc: 'IZUMI 2', a: 78.12, p: 96.49, q: 96.26, oee: 72.56 },
+            { tahun: 2026, bulan: 'AGUSTUS', mc: 'IZUMI 2', a: 78.43, p: 96.18, q: 95.92, oee: 72.35 },
+            { tahun: 2026, bulan: 'SEPTEMBER', mc: 'IZUMI 2', a: 79.31, p: 94.98, q: 96.02, oee: 72.33 },
+            { tahun: 2026, bulan: 'OKTOBER', mc: 'IZUMI 2', a: 78.71, p: 96.58, q: 96.30, oee: 73.20 },
+            { tahun: 2026, bulan: 'NOVEMBER', mc: 'IZUMI 2', a: 77.85, p: 96.38, q: 96.33, oee: 72.28 },
+
+            // --- DATA 2025 ---
+            { tahun: 2025, bulan: 'AGUSTUS', mc: 'AG800A', a: 77.50, p: 91.04, q: 93.68, oee: 66.09 },
+            { tahun: 2025, bulan: 'SEPTEMBER', mc: 'AG800A', a: 75.54, p: 89.19, q: 94.68, oee: 63.78 },
+            { tahun: 2025, bulan: 'OKTOBER', mc: 'AG800A', a: 76.74, p: 90.19, q: 95.54, oee: 66.13 },
+            { tahun: 2025, bulan: 'NOVEMBER', mc: 'AG800A', a: 79.26, p: 87.08, q: 95.15, oee: 65.67 },
+            { tahun: 2025, bulan: 'DESEMBER', mc: 'AG800A', a: 77.00, p: 88.56, q: 95.37, oee: 65.03 },
+            { tahun: 2025, bulan: 'JANUARI', mc: 'IZUMI 1', a: 77.68, p: 84.76, q: 90.70, oee: 59.72 },
+            { tahun: 2025, bulan: 'FEBRUARI', mc: 'IZUMI 1', a: 76.90, p: 86.20, q: 93.16, oee: 61.77 },
+            { tahun: 2025, bulan: 'MARET', mc: 'IZUMI 1', a: 76.04, p: 89.43, q: 93.96, oee: 63.90 },
+            { tahun: 2025, bulan: 'APRIL', mc: 'IZUMI 1', a: 74.57, p: 91.80, q: 93.11, oee: 63.73 },
+            { tahun: 2025, bulan: 'MEI', mc: 'IZUMI 1', a: 76.29, p: 91.74, q: 92.82, oee: 64.96 },
+            { tahun: 2025, bulan: 'JUNI', mc: 'IZUMI 1', a: 79.54, p: 91.32, q: 93.25, oee: 67.74 },
+            { tahun: 2025, bulan: 'JULI', mc: 'IZUMI 1', a: 80.03, p: 91.63, q: 93.01, oee: 68.20 },
+            { tahun: 2025, bulan: 'AGUSTUS', mc: 'IZUMI 1', a: 79.73, p: 92.95, q: 93.52, oee: 69.31 },
+            { tahun: 2025, bulan: 'SEPTEMBER', mc: 'IZUMI 1', a: 79.80, p: 92.83, q: 94.70, oee: 70.16 },
+            { tahun: 2025, bulan: 'OKTOBER', mc: 'IZUMI 1', a: 77.33, p: 95.11, q: 95.44, oee: 70.20 },
+            { tahun: 2025, bulan: 'NOVEMBER', mc: 'IZUMI 1', a: 78.03, p: 92.18, q: 95.31, oee: 68.55 },
+            { tahun: 2025, bulan: 'DESEMBER', mc: 'IZUMI 1', a: 79.22, p: 93.17, q: 95.49, oee: 70.48 },
+            { tahun: 2025, bulan: 'JANUARI', mc: 'IZUMI 2', a: 77.00, p: 85.98, q: 91.93, oee: 60.68 },
+            { tahun: 2025, bulan: 'FEBRUARI', mc: 'IZUMI 2', a: 80.46, p: 87.13, q: 92.95, oee: 65.16 },
+            { tahun: 2025, bulan: 'MARET', mc: 'IZUMI 2', a: 83.12, p: 86.32, q: 94.00, oee: 67.44 },
+            { tahun: 2025, bulan: 'APRIL', mc: 'IZUMI 2', a: 82.38, p: 88.37, q: 93.08, oee: 67.75 },
+            { tahun: 2025, bulan: 'MEI', mc: 'IZUMI 2', a: 82.18, p: 90.44, q: 92.84, oee: 69.00 },
+            { tahun: 2025, bulan: 'JUNI', mc: 'IZUMI 2', a: 80.92, p: 89.99, q: 93.25, oee: 67.91 },
+            { tahun: 2025, bulan: 'JULI', mc: 'IZUMI 2', a: 80.94, p: 93.06, q: 93.02, oee: 70.07 },
+            { tahun: 2025, bulan: 'AGUSTUS', mc: 'IZUMI 2', a: 80.20, p: 93.42, q: 93.55, oee: 70.09 },
+            { tahun: 2025, bulan: 'SEPTEMBER', mc: 'IZUMI 2', a: 80.36, p: 94.06, q: 94.67, oee: 71.57 },
+            { tahun: 2025, bulan: 'OKTOBER', mc: 'IZUMI 2', a: 78.22, p: 96.01, q: 95.44, oee: 71.68 },
+            { tahun: 2025, bulan: 'NOVEMBER', mc: 'IZUMI 2', a: 78.85, p: 95.14, q: 95.38, oee: 71.55 },
+            { tahun: 2025, bulan: 'DESEMBER', mc: 'IZUMI 2', a: 79.51, p: 95.76, q: 95.48, oee: 72.70 },
+
+            // --- DATA 2024 ---
+            { tahun: 2024, bulan: 'JANUARI', mc: 'AG800A', a: 66.85, p: 88.68, q: 89.80, oee: 53.24 },
+            { tahun: 2024, bulan: 'FEBRUARI', mc: 'AG800A', a: 67.28, p: 90.06, q: 90.02, oee: 54.54 },
+            { tahun: 2024, bulan: 'MARET', mc: 'AG800A', a: 73.12, p: 96.67, q: 92.26, oee: 65.42 },
+            { tahun: 2024, bulan: 'APRIL', mc: 'AG800A', a: 74.15, p: 97.88, q: 93.41, oee: 67.80 },
+            { tahun: 2024, bulan: 'JANUARI', mc: 'AG1000', a: 70.20, p: 95.53, q: 89.96, oee: 60.33 },
+            { tahun: 2024, bulan: 'FEBRUARI', mc: 'AG1000', a: 80.69, p: 98.08, q: 90.02, oee: 71.24 },
+            { tahun: 2024, bulan: 'MARET', mc: 'AG1000', a: 77.25, p: 99.80, q: 92.18, oee: 71.07 },
+            { tahun: 2024, bulan: 'APRIL', mc: 'AG1000', a: 79.26, p: 98.41, q: 93.50, oee: 72.93 },
+            { tahun: 2024, bulan: 'MEI', mc: 'AG1000', a: 78.69, p: 94.19, q: 94.86, oee: 70.30 },
+            { tahun: 2024, bulan: 'JUNI', mc: 'AG1000', a: 71.91, p: 92.32, q: 95.56, oee: 63.44 },
+            { tahun: 2024, bulan: 'JULI', mc: 'AG1000', a: 78.82, p: 86.92, q: 95.45, oee: 65.39 },
+            { tahun: 2024, bulan: 'AGUSTUS', mc: 'AG1000', a: 85.89, p: 93.90, q: 95.32, oee: 76.87 },
+            { tahun: 2024, bulan: 'JANUARI', mc: 'IZUMI 1', a: 82.63, p: 98.33, q: 89.81, oee: 72.97 },
+            { tahun: 2024, bulan: 'FEBRUARI', mc: 'IZUMI 1', a: 85.98, p: 99.16, q: 90.00, oee: 76.74 },
+            { tahun: 2024, bulan: 'MARET', mc: 'IZUMI 1', a: 87.53, p: 99.95, q: 92.15, oee: 80.62 },
+            { tahun: 2024, bulan: 'APRIL', mc: 'IZUMI 1', a: 91.36, p: 99.74, q: 93.50, oee: 85.19 },
+            { tahun: 2024, bulan: 'MEI', mc: 'IZUMI 1', a: 91.68, p: 96.95, q: 94.73, oee: 84.20 },
+            { tahun: 2024, bulan: 'JUNI', mc: 'IZUMI 1', a: 77.51, p: 90.16, q: 95.40, oee: 66.66 },
+            { tahun: 2024, bulan: 'JULI', mc: 'IZUMI 1', a: 72.55, p: 85.98, q: 95.41, oee: 59.52 },
+            { tahun: 2024, bulan: 'AGUSTUS', mc: 'IZUMI 1', a: 82.99, p: 91.83, q: 95.36, oee: 72.67 },
+            { tahun: 2024, bulan: 'SEPTEMBER', mc: 'IZUMI 1', a: 79.21, p: 91.61, q: 93.92, oee: 68.16 },
+            { tahun: 2024, bulan: 'OKTOBER', mc: 'IZUMI 1', a: 76.93, p: 90.64, q: 93.05, oee: 64.89 },
+            { tahun: 2024, bulan: 'NOVEMBER', mc: 'IZUMI 1', a: 74.14, p: 85.07, q: 89.21, oee: 56.29 },
+            { tahun: 2024, bulan: 'DESEMBER', mc: 'IZUMI 1', a: 71.49, p: 82.13, q: 89.15, oee: 52.34 },
+            { tahun: 2024, bulan: 'SEPTEMBER', mc: 'IZUMI 2', a: 77.72, p: 90.77, q: 93.63, oee: 66.05 },
+            { tahun: 2024, bulan: 'OKTOBER', mc: 'IZUMI 2', a: 78.83, p: 91.91, q: 93.20, oee: 67.53 },
+            { tahun: 2024, bulan: 'NOVEMBER', mc: 'IZUMI 2', a: 78.59, p: 84.47, q: 89.56, oee: 59.45 },
+            { tahun: 2024, bulan: 'DESEMBER', mc: 'IZUMI 2', a: 79.33, p: 67.68, q: 89.90, oee: 48.27 },
+            { tahun: 2024, bulan: 'JANUARI', mc: 'KAOGIN', a: 55.24, p: 75.93, q: 89.72, oee: 37.63 },
+            { tahun: 2024, bulan: 'FEBRUARI', mc: 'KAOGIN', a: 66.06, p: 80.53, q: 89.68, oee: 47.71 },
+            { tahun: 2024, bulan: 'MARET', mc: 'KAOGIN', a: 66.05, p: 91.14, q: 92.34, oee: 55.59 },
+            { tahun: 2024, bulan: 'APRIL', mc: 'KAOGIN', a: 70.05, p: 94.65, q: 93.28, oee: 61.85 },
+            { tahun: 2024, bulan: 'JANUARI', mc: 'IH-CHING', a: 60.17, p: 78.25, q: 89.67, oee: 42.22 },
+            { tahun: 2024, bulan: 'FEBRUARI', mc: 'IH-CHING', a: 68.23, p: 84.65, q: 89.98, oee: 51.97 },
+            { tahun: 2024, bulan: 'MARET', mc: 'IH-CHING', a: 61.38, p: 93.26, q: 92.22, oee: 52.79 },
+            { tahun: 2024, bulan: 'APRIL', mc: 'IH-CHING', a: 67.01, p: 90.17, q: 93.12, oee: 56.27 }
+        ];
+
+        const PARETO_DATA_2024 = [
+            { penyebab: 'Kress Skier', menit: 52718, persen: 17.96 },
+            { penyebab: 'Putus Benang', menit: 42270, persen: 14.40 },
+            { penyebab: 'Ganti Corak', menit: 27628, persen: 9.41 },
+            { penyebab: 'Cucuk Ulang', menit: 24026, persen: 8.18 },
+            { penyebab: 'Tunggu Beam Siap Sizing', menit: 23887, persen: 8.14 },
+            { penyebab: 'Doffing Benang', menit: 13279, persen: 4.52 },
+            { penyebab: 'Tunggu Beam Kosong', menit: 13123, persen: 4.47 },
+            { penyebab: 'Breakdown Mechanical', menit: 11123, persen: 3.79 },
+            { penyebab: 'Perbaikan Beam Skier', menit: 10027, persen: 3.42 },
+            { penyebab: 'Tarik Benang', menit: 9910, persen: 3.38 },
+            { penyebab: 'Cucuk Depan Sizing', menit: 9542, persen: 3.25 },
+            { penyebab: 'Bongkar Pasang Beam Sizing', menit: 8344, persen: 2.84 },
+            { penyebab: 'Tarik Sizing', menit: 6340, persen: 2.16 },
+            { penyebab: 'Cleaning', menit: 6187, persen: 2.11 },
+            { penyebab: 'Cucuk Skier', menit: 6091, persen: 2.07 },
+            { penyebab: 'Speed Pelan', menit: 5620, persen: 1.91 },
+            { penyebab: 'Tunggu Steam', menit: 4254, persen: 1.45 },
+            { penyebab: 'Sambung Benang Sw', menit: 3549, persen: 1.21 },
+            { penyebab: 'Kress Belakang Sizing', menit: 3330, persen: 1.13 },
+            { penyebab: 'Mecah Benang', menit: 2926, persen: 1.00 },
+            { penyebab: 'Kress Depan Sizing', menit: 2920, persen: 0.99 },
+            { penyebab: 'Breakdown Electrical', menit: 1996, persen: 0.68 },
+            { penyebab: 'Tunggu Masak Kanji', menit: 1652, persen: 0.56 },
+            { penyebab: 'Kanji Mampet', menit: 1276, persen: 0.43 },
+            { penyebab: 'Cari Transit', menit: 1064, persen: 0.36 },
+            { penyebab: 'Creeling', menit: 514, persen: 0.18 }
+        ];
+
+        const PARETO_DATA_2025 = [
+            { penyebab: 'Kress Skier', menit: 48827, persen: 33.71 },
+            { penyebab: 'Putus Benang', menit: 40952, persen: 28.27 },
+            { penyebab: 'Ganti Corak', menit: 37165, persen: 25.66 },
+            { penyebab: 'Doffing Benang', menit: 9659, persen: 6.67 },
+            { penyebab: 'Tunggu Beam Kosong', menit: 1914, persen: 1.32 },
+            { penyebab: 'Cucuk Skier', menit: 1516, persen: 1.05 },
+            { penyebab: 'Tarik Benang', menit: 1038, persen: 0.72 },
+            { penyebab: 'Cucuk Ulang', menit: 918, persen: 0.63 },
+            { penyebab: 'Breakdown Mechanical', menit: 897, persen: 0.62 },
+            { penyebab: 'Mecah Benang', menit: 770, persen: 0.53 },
+            { penyebab: 'Sambung Benang Sw', menit: 477, persen: 0.33 },
+            { penyebab: 'Breakdown Electrical', menit: 383, persen: 0.26 },
+            { penyebab: 'Cleaning', menit: 140, persen: 0.10 },
+            { penyebab: 'Tunggu Benang', menit: 72, persen: 0.05 },
+            { penyebab: 'Creeling Ulang', menit: 54, persen: 0.04 },
+            { penyebab: 'Bongkar Pasang Skier', menit: 45, persen: 0.03 },
+            { penyebab: 'Lusi Ambrol', menit: 22, persen: 0.02 }
+        ];
+
+        const PARETO_DATA_2026 = [
+            { penyebab: 'Kress Skier', menit: 49703, persen: 34.82 },
+            { penyebab: 'Ganti Corak', menit: 39501, persen: 27.67 },
+            { penyebab: 'Putus Benang', menit: 28288, persen: 19.77 },
+            { penyebab: 'Doffing Benang', menit: 18715, persen: 13.11 },
+            { penyebab: 'Cucuk Skier', menit: 1954, persen: 1.37 },
+            { penyebab: 'Mecah Benang', menit: 952, persen: 0.67 },
+            { penyebab: 'Creeling Ulang', menit: 696, persen: 0.49 },
+            { penyebab: 'Adjust Skala', menit: 620, persen: 0.43 },
+            { penyebab: 'Breakdown Mechanical', menit: 483, persen: 0.34 },
+            { penyebab: 'Cucuk Ulang', menit: 426, persen: 0.30 },
+            { penyebab: 'Ganti Cucukan', menit: 353, persen: 0.25 },
+            { penyebab: 'Tambah Helai', menit: 288, persen: 0.20 },
+            { penyebab: 'Breakdown Electrical', menit: 283, persen: 0.20 },
+            { penyebab: 'Tarik Benang', menit: 220, persen: 0.15 },
+            { penyebab: 'Tunggu Beam Kosong', menit: 126, persen: 0.09 },
+            { penyebab: 'Cleaning', menit: 117, persen: 0.08 },
+            { penyebab: 'Tunggu IKT', menit: 70, persen: 0.05 },
+            { penyebab: 'Setting Stop Motion', menit: 21, persen: 0.01 }
+        ];
+
+        // DATA PARETO PER MESIN 2024
+        const PARETO_MACHINE_2024 = {
+            'AG800A': [
+                { penyebab: 'Kress Skier', menit: 9374 }, { penyebab: 'Putus Benang', menit: 8439 },
+                { penyebab: 'Tarik Benang', menit: 4033 }, { penyebab: 'Breakdown Mechanical', menit: 1843 },
+                { penyebab: 'Cucuk Skier', menit: 1712 }, { penyebab: 'Doffing Benang', menit: 1442 },
+                { penyebab: 'Sambung Benang SW', menit: 1398 }, { penyebab: 'Ganti Corak', menit: 631 },
+                { penyebab: 'Cleaning', menit: 454 }, { penyebab: 'Breakdown Electrical', menit: 345 },
+                { penyebab: 'Tunggu Beam Kosong', menit: 305 }, { penyebab: 'Tunggu Benang', menit: 201 },
+                { penyebab: 'Creeling', menit: 150 }, { penyebab: 'Mecah Benang', menit: 125 },
+                { penyebab: 'Tunggu IKT', menit: 120 }
+            ],
+            'AG800B': [
+                { penyebab: 'Kress Skier', menit: 8368 }, { penyebab: 'Putus Benang', menit: 4426 },
+                { penyebab: 'Tunggu IKT', menit: 4140 }, { penyebab: 'Tarik Benang', menit: 2238 },
+                { penyebab: 'Cucuk Skier', menit: 1495 }, { penyebab: 'Doffing Benang', menit: 1476 },
+                { penyebab: 'Sambung Benang SW', menit: 1190 }, { penyebab: 'Ganti Corak', menit: 789 },
+                { penyebab: 'Cleaning', menit: 722 }, { penyebab: 'Breakdown Mechanical', menit: 530 },
+                { penyebab: 'Tunggu Beam Kosong', menit: 350 }, { penyebab: 'Mecah Benang', menit: 237 },
+                { penyebab: 'Creeling', menit: 140 }, { penyebab: 'Breakdown Electrical', menit: 75 }
+            ],
+            'AG1000': [
+                { penyebab: 'Kress Skier', menit: 11918 }, { penyebab: 'Putus Benang', menit: 11256 },
+                { penyebab: 'Tunggu Beam Kosong', menit: 5950 }, { penyebab: 'Ganti Corak', menit: 5015 },
+                { penyebab: 'Breakdown Mechanical', menit: 3766 }, { penyebab: 'Speed Pelan', menit: 3487 },
+                { penyebab: 'Doffing Benang', menit: 2569 }, { penyebab: 'Tunggu Ikt', menit: 2182 },
+                { penyebab: 'Cucuk Skier', menit: 1105 }, { penyebab: 'Tarik Benang', menit: 895 },
+                { penyebab: 'Mecah Benang', menit: 853 }, { penyebab: 'Cleaning', menit: 573 },
+                { penyebab: 'Breakdown Electrical', menit: 563 }, { penyebab: 'Sambung Benang SW', menit: 364 },
+                { penyebab: 'Bongkar Pasang Skier', menit: 107 }, { penyebab: 'Cari Transit', menit: 102 },
+                { penyebab: 'Creeling', menit: 30 }
+            ],
+            'IZUMI 1': [
+                { penyebab: 'Kress Skier', menit: 18734 }, { penyebab: 'Ganti Corak', menit: 15444 },
+                { penyebab: 'Putus Benang', menit: 15440 }, { penyebab: 'Doffing Benang', menit: 6011 },
+                { penyebab: 'Tunggu Beam Kosong', menit: 2943 }, { penyebab: 'Tarik Benang', menit: 2293 },
+                { penyebab: 'Speed Pelan', menit: 1814 }, { penyebab: 'Cucuk Skier', menit: 1745 },
+                { penyebab: 'Breakdown Mechanical', menit: 1330 }, { penyebab: 'Mecah Benang', menit: 1239 },
+                { penyebab: 'Cleaning', menit: 758 }, { penyebab: 'Sambung Benang SW', menit: 597 },
+                { penyebab: 'Cari Transit', menit: 530 }, { penyebab: 'Breakdown Electrical', menit: 478 },
+                { penyebab: 'Creeling', menit: 104 }, { penyebab: 'Tunggu Benang', menit: 44 },
+                { penyebab: 'Cucuk Ulang', menit: 30 }
+            ],
+            'IZUMI 2': [
+                { penyebab: 'Ganti Corak', menit: 6329 }, { penyebab: 'Kress Skier', menit: 4632 },
+                { penyebab: 'Putus Benang', menit: 2942 }, { penyebab: 'Doffing Benang', menit: 1857 },
+                { penyebab: 'Mecah Benang', menit: 518 }, { penyebab: 'Tarik Benang', menit: 441 },
+                { penyebab: 'Cari Transit', menit: 432 }, { penyebab: 'Tunggu Beam Kosong', menit: 307 },
+                { penyebab: 'Cucuk Ulang', menit: 148 }, { penyebab: 'Cucuk Skier', menit: 65 },
+                { penyebab: 'Breakdown Mechanical', menit: 61 }, { penyebab: 'Cleaning', menit: 35 }
+            ],
+            'KAOGIN': [
+                { penyebab: 'Tunggu Beam Siap Sizing', menit: 15211 }, { penyebab: 'Perbaikan Beam Skier', menit: 4585 },
+                { penyebab: 'Cucuk Depan Sizing', menit: 4338 }, { penyebab: 'Bongkar Pasang Beam Sizing', menit: 3660 },
+                { penyebab: 'Tarik Sizing', menit: 3045 }, { penyebab: 'Tunggu Steam', menit: 1904 },
+                { penyebab: 'Breakdown Mechanical', menit: 1779 }, { penyebab: 'Kress Belakang Sizing', menit: 1625 },
+                { penyebab: 'Cleaning', menit: 1625 }, { penyebab: 'Kress Depan Sizing', menit: 1400 },
+                { penyebab: 'Tunggu Beam Kosong', menit: 1343 }, { penyebab: 'Tunggu Masak Kanji', menit: 792 },
+                { penyebab: 'Kanji Mampet', menit: 620 }, { penyebab: 'Breakdown Electrical', menit: 230 },
+                { penyebab: 'Cleaning Saluran Kanji', menit: 160 }, { penyebab: 'Tarik Benang', menit: 20 },
+                { penyebab: 'Cucuk Belakang Sizing', menit: 10 }
+            ],
+            'IH-CHING': [
+                { penyebab: 'Tunggu Beam Siap Sizing', menit: 8676 }, { penyebab: 'Perbaikan Beam Skier', menit: 5442 },
+                { penyebab: 'Cucuk Depan Sizing', menit: 5204 }, { penyebab: 'Bongkar Pasang Beam Sizing', menit: 4684 },
+                { penyebab: 'Tarik Sizing', menit: 3295 }, { penyebab: 'Tunggu Steam', menit: 2350 },
+                { penyebab: 'Cleaning', menit: 1985 }, { penyebab: 'Tunggu Beam Kosong', menit: 1925 },
+                { penyebab: 'Breakdown Mechanical', menit: 1789 }, { penyebab: 'Kress Belakang Sizing', menit: 1705 },
+                { penyebab: 'Kress Depan Sizing', menit: 1520 }, { penyebab: 'Tunggu Masak Kanji', menit: 860 },
+                { penyebab: 'Kanji Mampet', menit: 656 }, { penyebab: 'Breakdown Electrical', menit: 305 },
+                { penyebab: 'Cleaning Saluran Kanji', menit: 159 }
+            ]
+        };
+
+        const PARETO_MACHINE_2025 = {
+            'IZUMI 1': [
+                { penyebab: 'Kress Skier', menit: 28028 }, { penyebab: 'Putus Benang', menit: 24425 },
+                { penyebab: 'Ganti Corak', menit: 13924 }, { penyebab: 'Doffing Benang', menit: 3481 },
+                { penyebab: 'Tunggu Beam Kosong', menit: 953 }, { penyebab: 'Cucuk Skier', menit: 811 },
+                { penyebab: 'Breakdown Mechanical', menit: 735 }, { penyebab: 'Cucuk Ulang', menit: 494 },
+                { penyebab: 'Tarik Benang', menit: 397 }, { penyebab: 'Mecah Benang', menit: 375 },
+                { penyebab: 'Breakdown Electrical', menit: 299 }, { penyebab: 'Cleaning', menit: 64 },
+                { penyebab: 'Bongkar Pasang Skier', menit: 45 }, { penyebab: 'Sambung Benang SW', menit: 24 },
+                { penyebab: 'Lusi Ambrol', menit: 22 }
+            ],
+            'IZUMI 2': [
+                { penyebab: 'Ganti Corak', menit: 22602 }, { penyebab: 'Kress Skier', menit: 18056 },
+                { penyebab: 'Putus Benang', menit: 15114 }, { penyebab: 'Doffing Benang', menit: 4901 },
+                { penyebab: 'Tunggu Beam Kosong', menit: 961 }, { penyebab: 'Sambung Benang Sw', menit: 422 },
+                { penyebab: 'Cucuk Ulang', menit: 389 }, { penyebab: 'Cucuk Skier', menit: 338 },
+                { penyebab: 'Mecah Benang', menit: 265 }, { penyebab: 'Tarik Benang', menit: 219 },
+                { penyebab: 'Cleaning', menit: 76 }, { penyebab: 'Breakdown Electrical', menit: 74 },
+                { penyebab: 'Tunggu Benang', menit: 72 }, { penyebab: 'Breakdown Mechanical', menit: 62 },
+                { penyebab: 'Creeling Ulang', menit: 54 }
+            ],
+            'AG800A': [
+                { penyebab: 'Kress Skier', menit: 2743 }, { penyebab: 'Putus Benang', menit: 1413 },
+                { penyebab: 'Doffing Benang', menit: 1277 }, { penyebab: 'Ganti Corak', menit: 639 },
+                { penyebab: 'Tarik Benang', menit: 422 }, { penyebab: 'Cucuk Skier', menit: 367 },
+                { penyebab: 'Mecah Benang', menit: 130 }, { penyebab: 'Breakdown Mechanical', menit: 100 },
+                { penyebab: 'Cucuk Ulang', menit: 35 }, { penyebab: 'Sambung Benang Sw', menit: 31 },
+                { penyebab: 'Breakdown Electrical', menit: 10 }
+            ]
+        };
+
+        const PARETO_MACHINE_2026 = {
+            'IZUMI 1': [
+                { penyebab: 'Kress Skier', menit: 20744 }, { penyebab: 'Putus Benang', menit: 15669 },
+                { penyebab: 'Ganti Corak', menit: 15184 }, { penyebab: 'Doffing Benang', menit: 8037 },
+                { penyebab: 'Cucuk Skier', menit: 692 }, { penyebab: 'Mecah Benang', menit: 579 },
+                { penyebab: 'Adjust Skala', menit: 431 }, { penyebab: 'Cucuk Ulang', menit: 279 },
+                { penyebab: 'Creeling Ulang', menit: 254 }, { penyebab: 'Breakdown Mechanical', menit: 251 },
+                { penyebab: 'Ganti Cucukan', menit: 239 }, { penyebab: 'Tambah Helai', menit: 167 },
+                { penyebab: 'Breakdown Electrical', menit: 144 }, { penyebab: 'Tunggu Beam Kosong', menit: 126 },
+                { penyebab: 'Cleaning', menit: 77 }, { penyebab: 'Tarik Benang', menit: 20 }
+            ],
+            'IZUMI 2': [
+                { penyebab: 'Ganti Corak', menit: 23969 }, { penyebab: 'Kress Skier', menit: 23393 },
+                { penyebab: 'Putus Benang', menit: 10667 }, { penyebab: 'Doffing Benang', menit: 8341 },
+                { penyebab: 'Cucuk Skier', menit: 737 }, { penyebab: 'Creeling Ulang', menit: 247 },
+                { penyebab: 'Adjust Skala', menit: 179 }, { penyebab: 'Mecah Benang', menit: 120 },
+                { penyebab: 'Breakdown Electrical', menit: 99 }, { penyebab: 'Tunggu Ikt', menit: 70 },
+                { penyebab: 'Cucuk Ulang', menit: 47 }, { penyebab: 'Breakdown Mechanical', menit: 44 },
+                { penyebab: 'Ganti Cucukan', menit: 42 },{ penyebab: 'Tambah Helai', menit: 41 },
+                { penyebab: 'Cleaning', menit: 40 }, { penyebab: 'Setting Stop Motion', menit: 21 }
+            ],
+            'AG800A': [
+                { penyebab: 'Kress Skier', menit: 4990 }, { penyebab: 'Doffing Benang', menit: 2337 },
+                { penyebab: 'Putus Benang', menit: 1892 }, { penyebab: 'Ganti Corak', menit: 924 },
+                { penyebab: 'Cucuk Skier', menit: 525 }, { penyebab: 'Mecah Benang', menit: 253 },
+                { penyebab: 'Tarik Benang', menit: 200 }, { penyebab: 'Creeling Ulang', menit: 195 },
+                { penyebab: 'Breakdown Mechanical', menit: 188 }, { penyebab: 'Cucuk Ulang', menit: 100 },
+                { penyebab: 'Tambah Helai', menit: 80 }, { penyebab: 'Ganti Cucukan', menit: 72 },
+                { penyebab: 'Breakdown Electrical', menit: 40 }, { penyebab: 'Adjust Skala', menit: 10 }
+            ]
+        };
+
+        let myChart = null;
+        let myParetoChart = null;
+        let mtbfChartInstance = null;
+        let prodChartInstance = null;
+
+        function calculatePareto(dataArray) {
+            if (!dataArray || dataArray.length === 0) return [];
+            let totalMenit = dataArray.reduce((sum, item) => sum + item.menit, 0);
+            let result = dataArray.map(item => ({
+                penyebab: item.penyebab,
+                menit: item.menit,
+                persen: (item.menit / totalMenit) * 100
+            }));
+            return result.sort((a, b) => b.menit - a.menit);
+        }
+
+        function getParetoData(selectedYear, selectedMc) {
+            // Cek apabila filter ditujukan ke spesifik Mesin
+            if (selectedMc !== 'ALL') {
+                if (selectedYear === '2024') {
+                    return PARETO_MACHINE_2024[selectedMc] ? calculatePareto(PARETO_MACHINE_2024[selectedMc]) : [];
+                } else if (selectedYear === '2025') {
+                    return PARETO_MACHINE_2025[selectedMc] ? calculatePareto(PARETO_MACHINE_2025[selectedMc]) : [];
+                } else if (selectedYear === '2026') {
+                    return PARETO_MACHINE_2026[selectedMc] ? calculatePareto(PARETO_MACHINE_2026[selectedMc]) : [];
+                } else if (selectedYear === 'ALL') {
+                    // "ALL TAHUN": Gabungkan Data 2024 + 2025 + 2026 untuk mesin spesifik
+                    const combined = {};
+                    let hasData = false;
+                    
+                    const addMachineData = (sourceObj) => {
+                        if (sourceObj[selectedMc]) {
+                            sourceObj[selectedMc].forEach(item => {
+                                combined[item.penyebab] = (combined[item.penyebab] || 0) + item.menit;
+                                hasData = true;
+                            });
+                        }
+                    };
+                    
+                    addMachineData(PARETO_MACHINE_2024);
+                    addMachineData(PARETO_MACHINE_2025);
+                    addMachineData(PARETO_MACHINE_2026);
+                    
+                    if (!hasData) return [];
+                    const resultArr = Object.keys(combined).map(key => ({ penyebab: key, menit: combined[key] }));
+                    return calculatePareto(resultArr);
+                } else {
+                    return [];
+                }
+            }
+
+            // --- JIKA FILTER = ALL MESIN (Keseluruhan Departemen) ---
+            if (selectedYear === '2024') return PARETO_DATA_2024.sort((a, b) => b.menit - a.menit);
+            if (selectedYear === '2025') return PARETO_DATA_2025.sort((a, b) => b.menit - a.menit);
+            if (selectedYear === '2026') return PARETO_DATA_2026.sort((a, b) => b.menit - a.menit);
+            
+            // "ALL TAHUN": Gabungkan Data Departemen 2024 + 2025 + 2026
+            const combined = {};
+            let totalMenitAll = 0;
+            
+            const addData = (dataArray) => {
+                dataArray.forEach(item => {
+                    if (!combined[item.penyebab]) combined[item.penyebab] = 0;
+                    combined[item.penyebab] += item.menit;
+                    totalMenitAll += item.menit;
+                });
+            };
+            
+            addData(PARETO_DATA_2024);
+            addData(PARETO_DATA_2025);
+            addData(PARETO_DATA_2026);
+            
+            const result = [];
+            for (let penyebab in combined) {
+                let menit = combined[penyebab];
+                let persen = (menit / totalMenitAll) * 100;
+                result.push({ penyebab, menit, persen });
+            }
+            
+            result.sort((a, b) => b.menit - a.menit); 
+            return result;
+        }
+
+        const monthMap = {
+            'JANUARI': 1, 'FEBRUARI': 2, 'MARET': 3, 'APRIL': 4,
+            'MEI': 5, 'JUNI': 6, 'JULI': 7, 'AGUSTUS': 8,
+            'SEPTEMBER': 9, 'OKTOBER': 10, 'NOVEMBER': 11, 'DESEMBER': 12
+        };
+
+        function switchTab(tabId) {
+            const tabOee = document.getElementById('tab-oee');
+            const tabPareto = document.getElementById('tab-pareto');
+            const tabMtbf = document.getElementById('tab-mtbf');
+
+            const navOee = document.getElementById('nav-oee');
+            const navPareto = document.getElementById('nav-pareto');
+            const navMtbf = document.getElementById('nav-mtbf');
+            
+            const inactiveClasses = ['text-slate-500', 'hover:bg-slate-100'];
+            const activeClasses = ['text-white', 'bg-accent-blue', 'shadow-md'];
+
+            tabOee.classList.add('hidden');
+            tabPareto.classList.add('hidden');
+            tabMtbf.classList.add('hidden');
+            
+            navOee.classList.remove(...activeClasses); navOee.classList.add(...inactiveClasses);
+            navPareto.classList.remove(...activeClasses); navPareto.classList.add(...inactiveClasses);
+            navMtbf.classList.remove(...activeClasses); navMtbf.classList.add(...inactiveClasses);
+
+            if (tabId === 'oee') {
+                tabOee.classList.remove('hidden');
+                navOee.classList.remove(...inactiveClasses); navOee.classList.add(...activeClasses);
+            } else if (tabId === 'pareto') {
+                tabPareto.classList.remove('hidden');
+                navPareto.classList.remove(...inactiveClasses); navPareto.classList.add(...activeClasses);
+            } else if (tabId === 'mtbf') {
+                tabMtbf.classList.remove('hidden');
+                navMtbf.classList.remove(...inactiveClasses); navMtbf.classList.add(...activeClasses);
+            }
+        }
+
+        function updateDashboard() {
+            const selectedYear = document.getElementById('yearFilter').value;
+            const selectedMc = document.getElementById('mcFilter').value;
+
+            // Gabung data
+            const FULL_DATA = [
+                ...MASTER_DATA.map(item => ({...item, mc: 'ALL'})),
+                ...MACHINE_DATA
+            ];
+
+            // Filter data
+            let filteredData = FULL_DATA.filter(item => {
+                const matchYear = selectedYear === 'ALL' ? true : item.tahun == selectedYear;
+                const matchMc = item.mc === selectedMc;
+                return matchYear && matchMc;
+            });
+
+            // LOGIC SORTING (Perbaikan Urutan Grafik agar Kronologis)
+            filteredData.sort((a, b) => {
+                if (a.tahun !== b.tahun) {
+                    return a.tahun - b.tahun; // Urutkan tahun lebih kecil ke besar
+                }
+                return monthMap[a.bulan] - monthMap[b.bulan]; // Urutkan bulan
+            });
+
+            // Judul
+            let titleYear = selectedYear === 'ALL' ? "(Semua Tahun)" : "Tahun " + selectedYear;
+            let titleMc = selectedMc === 'ALL' ? "Semua Mesin" : "Mesin " + selectedMc;
+            document.getElementById('chart-title-year').textContent = titleYear + " - " + titleMc;
+
+            const labels = [];
+            const dataOEE = [];
+            const dataA = [];
+            const dataP = [];
+            const dataQ = [];
+
+            let sumOEE = 0, sumA = 0, sumP = 0, sumQ = 0;
+
+            filteredData.forEach(item => {
+                let labelText = item.bulan;
+                if (selectedYear === 'ALL') {
+                    labelText = item.bulan.substring(0,3) + ' ' + item.tahun;
+                }
+                
+                labels.push(labelText);
+                dataOEE.push(item.oee);
+                dataA.push(item.a);
+                dataP.push(item.p);
+                dataQ.push(item.q);
+
+                sumOEE += item.oee;
+                sumA += item.a;
+                sumP += item.p;
+                sumQ += item.q;
+            });
+
+            const totalRows = filteredData.length || 1; 
+
+            // Update KPI
+            document.getElementById('kpi-oee').textContent = filteredData.length ? (sumOEE / totalRows).toFixed(2) + '%' : '0.00%';
+            document.getElementById('kpi-a').textContent = filteredData.length ? (sumA / totalRows).toFixed(2) + '%' : '0.00%';
+            document.getElementById('kpi-p').textContent = filteredData.length ? (sumP / totalRows).toFixed(2) + '%' : '0.00%';
+            document.getElementById('kpi-q').textContent = filteredData.length ? (sumQ / totalRows).toFixed(2) + '%' : '0.00%';
+
+            renderTable(filteredData);
+            renderChart(labels, dataOEE, dataA, dataP, dataQ);
+            renderPareto(selectedYear, selectedMc);
+            renderMtbf(selectedYear, selectedMc);
+        }
+
+        function renderTable(dataArray) {
+            const tbody = document.getElementById('tableBody');
+            let html = '';
+            
+            dataArray.forEach((item, index) => {
+                const isLast = (index === dataArray.length - 1);
+                const rowClass = isLast ? 'bg-blue-50/60 font-medium' : 'bg-white hover:bg-slate-50 transition-colors';
+                
+                html += `
+                    <tr class="${rowClass}">
+                        <td class="py-4 px-6 text-slate-500">${item.tahun}</td>
+                        <td class="py-4 px-6 font-semibold text-slate-800">${item.bulan}</td>
+                        <td class="py-4 px-6">${item.a.toFixed(2)}%</td>
+                        <td class="py-4 px-6">${item.p.toFixed(2)}%</td>
+                        <td class="py-4 px-6">${item.q.toFixed(2)}%</td>
+                        <td class="py-4 px-6 font-bold text-accent-blue bg-blue-50/30">${item.oee.toFixed(2)}%</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function renderChart(labels, dOEE, dA, dP, dQ) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            
+            if (myChart) myChart.destroy();
+
+            const commonDataLabelConfig = {
+                display: true, 
+                formatter: function(value) { return value + '%'; },
+                font: { weight: 'bold', size: 11, family: 'Inter' },
+                padding: 4,
+                borderRadius: 4
+            };
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'OEE',
+                            data: dOEE,
+                            borderColor: '#3b82f6', 
+                            backgroundColor: '#3b82f6',
+                            borderWidth: 4, 
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            tension: 0.3,
+                            datalabels: {
+                                ...commonDataLabelConfig,
+                                color: '#ffffff',
+                                backgroundColor: '#3b82f6', 
+                                align: 'top', 
+                                offset: 8
+                            }
+                        },
+                        {
+                            label: 'Availability',
+                            data: dA,
+                            borderColor: '#f97316', 
+                            backgroundColor: '#f97316',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            tension: 0.3,
+                            hidden: false, 
+                            datalabels: {
+                                ...commonDataLabelConfig,
+                                color: '#f97316',
+                                align: 'top', 
+                                offset: 6
+                            }
+                        },
+                        {
+                            label: 'Performance',
+                            data: dP,
+                            borderColor: '#10b981', 
+                            backgroundColor: '#10b981',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            tension: 0.3,
+                            hidden: false,
+                            datalabels: {
+                                ...commonDataLabelConfig,
+                                color: '#10b981',
+                                align: 'bottom', 
+                                offset: 6
+                            }
+                        },
+                        {
+                            label: 'Quality',
+                            data: dQ,
+                            borderColor: '#8b5cf6', 
+                            backgroundColor: '#8b5cf6',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            tension: 0.3,
+                            hidden: false,
+                            datalabels: {
+                                ...commonDataLabelConfig,
+                                color: '#8b5cf6',
+                                align: 'top', 
+                                offset: 6
+                            }
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: { top: 30, left: 20, right: 20 } 
+                    },
+                    plugins: {
+                        legend: { display: false }, 
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                            titleColor: '#ffffff',
+                            bodyColor: '#cbd5e1',
+                            titleFont: { size: 14, family: 'Inter' },
+                            bodyFont: { size: 13, family: 'Inter' },
+                            padding: 12,
+                            cornerRadius: 8,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return '  ' + context.dataset.label + ' : ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 30, 
+                            max: 100, 
+                            ticks: {
+                                callback: function(value) { return value + '%'; },
+                                color: '#64748b',
+                                font: { family: 'Inter' }
+                            },
+                            grid: { 
+                                display: true,
+                                color: '#e2e8f0', 
+                                borderDash: [5, 5] 
+                            }
+                        },
+                        x: {
+                            offset: true, 
+                            ticks: { color: '#475569', font: { weight: '500', family: 'Inter' } },
+                            grid: { 
+                                display: true, 
+                                color: '#f1f5f9', 
+                                borderDash: [5, 5] 
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+            
+            syncButtons();
+        }
+
+        function toggleLine(datasetIndex) {
+            if (!myChart) return;
+            const meta = myChart.getDatasetMeta(datasetIndex);
+            const btn = document.getElementById('btn-' + datasetIndex);
+
+            meta.hidden = meta.hidden === null ? !myChart.data.datasets[datasetIndex].hidden : null;
+            if (meta.hidden) {
+                btn.classList.add('inactive');
+            } else {
+                btn.classList.remove('inactive');
+            }
+            myChart.update();
+        }
+
+        function syncButtons() {
+            for(let i=0; i<=3; i++) {
+                const btn = document.getElementById('btn-' + i);
+                if(btn.classList.contains('inactive')){
+                    myChart.getDatasetMeta(i).hidden = true;
+                } else {
+                    myChart.getDatasetMeta(i).hidden = false;
+                }
+            }
+            myChart.update();
+        }
+
+        function applyFilters() {
+            updateDashboard();
+        }
+
+        function renderPareto(selectedYear, selectedMc) {
+            const dataToRender = getParetoData(selectedYear, selectedMc);
+
+            const tbody = document.getElementById('paretoTableBody');
+            
+            // Jika data kosong
+            if (!dataToRender || dataToRender.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-8 px-6 text-center text-slate-500 font-semibold italic bg-slate-50">Data Pareto tidak tersedia untuk filter Mesin dan Tahun yang dipilih.</td></tr>`;
+                const ctx = document.getElementById('paretoChart').getContext('2d');
+                if (myParetoChart) myParetoChart.destroy();
+                return;
+            }
+
+            let html = '';
+            let labels = [];
+            let persentase = [];
+            
+            dataToRender.forEach((item, index) => {
+                labels.push(item.penyebab);
+                persentase.push(item.persen);
+                
+                html += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-6 text-slate-500 font-semibold">${index + 1}</td>
+                        <td class="py-3 px-6 font-medium text-slate-800">${item.penyebab}</td>
+                        <td class="py-3 px-6 text-right">${item.menit.toLocaleString('id-ID')}</td>
+                        <td class="py-3 px-6 text-right font-bold text-accent-orange">${item.persen.toFixed(2)}%</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+
+            const ctx = document.getElementById('paretoChart').getContext('2d');
+            if (myParetoChart) myParetoChart.destroy();
+
+            myParetoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Persentase (%)',
+                        data: persentase,
+                        backgroundColor: '#f97316',
+                        borderRadius: 4,
+                        datalabels: {
+                            color: '#1e293b',
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: function(value) { return value.toFixed(2) + '%'; },
+                            font: { weight: 'bold', size: 10, family: 'Inter' }
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 25 } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) { return ' ' + context.parsed.y.toFixed(2) + '%'; }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            suggestedMax: Math.max(...persentase) + 5, 
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { font: { size: 10 }, maxRotation: 45, minRotation: 45 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderMtbf(selectedYear, selectedMc) {
+            // Karena data MTBF adalah data departemen (keseluruhan), jika ada filter per mesin kita bisa kosongkan atau tetap tampilkan note.
+            // Di sini kita filter berdasarkan Tahun saja (jika ALL, gabung semua).
+            let dataToRender = [];
+            
+            if (selectedYear === 'ALL') {
+                dataToRender = MTBF_DATA;
+            } else {
+                dataToRender = MTBF_DATA.filter(item => item.tahun == selectedYear);
+            }
+
+            const tbody = document.getElementById('mtbfTableBody');
+            
+            if (!dataToRender || dataToRender.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-8 px-6 text-center text-slate-500 font-semibold italic bg-slate-50">Data MTBF, MTTR & Produksi tidak tersedia untuk tahun yang dipilih.</td></tr>`;
+                if(mtbfChartInstance) mtbfChartInstance.destroy();
+                if(prodChartInstance) prodChartInstance.destroy();
+                return;
+            }
+
+            let html = '';
+            let labels = [];
+            let mtbfData = [];
+            let mttrData = [];
+            let prodData = [];
+            
+            dataToRender.forEach((item) => {
+                let labelText = item.bulan;
+                if (selectedYear === 'ALL') {
+                    labelText = item.bulan.substring(0,3) + ' ' + item.tahun;
+                }
+                labels.push(labelText);
+                mtbfData.push(item.mtbf);
+                mttrData.push(item.mttr);
+                prodData.push(item.prod);
+                
+                html += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-6 text-slate-500">${item.tahun}</td>
+                        <td class="py-3 px-6 font-medium text-slate-800">${item.bulan}</td>
+                        <td class="py-3 px-6 text-right font-semibold text-accent-blue">${item.mtbf.toFixed(2)}</td>
+                        <td class="py-3 px-6 text-right font-semibold text-accent-orange">${item.mttr.toFixed(2)}</td>
+                        <td class="py-3 px-6 text-right font-bold text-accent-green">${item.prod.toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+
+            // Render MTBF & MTTR Chart (Dual Y-Axis)
+            const ctxMtbf = document.getElementById('mtbfChart').getContext('2d');
+            if (mtbfChartInstance) mtbfChartInstance.destroy();
+            
+            mtbfChartInstance = new Chart(ctxMtbf, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'MTBF (Jam)',
+                            data: mtbfData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: '#3b82f6',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            yAxisID: 'y',
+                            datalabels: {
+                                display: true,
+                                color: '#3b82f6',
+                                align: function(context) {
+                                    if (context.dataIndex === 0) return 'right';
+                                    if (context.dataIndex === context.dataset.data.length - 1) return 'left';
+                                    return 'top';
+                                },
+                                backgroundColor: 'rgba(255, 255, 255, 0.75)',
+                                borderRadius: 4,
+                                offset: 6,
+                                formatter: function(value) { return value > 0 ? value.toFixed(1) : '0'; },
+                                font: { size: 10, weight: 'bold', family: 'Inter' }
+                            }
+                        },
+                        {
+                            label: 'MTTR (Jam)',
+                            data: mttrData,
+                            borderColor: '#f97316',
+                            backgroundColor: '#f97316',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            yAxisID: 'y1',
+                            datalabels: {
+                                display: true,
+                                color: '#f97316',
+                                align: function(context) {
+                                    if (context.dataIndex === 0) return 'right';
+                                    if (context.dataIndex === context.dataset.data.length - 1) return 'left';
+                                    return 'bottom';
+                                },
+                                backgroundColor: 'rgba(255, 255, 255, 0.75)',
+                                borderRadius: 4,
+                                offset: 6,
+                                formatter: function(value) { return value > 0 ? value.toFixed(2) : '0'; },
+                                font: { size: 10, weight: 'bold', family: 'Inter' }
+                            }
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: { top: 30, bottom: 20, left: 30, right: 30 }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                        datalabels: { display: false } // Sembunyikan setelan global agar menggunakan setelan di dataset
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'MTBF (Jam)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'MTTR (Jam)' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+
+            // Render PROD Chart (Bar)
+            const ctxProd = document.getElementById('prodChart').getContext('2d');
+            if (prodChartInstance) prodChartInstance.destroy();
+            
+            prodChartInstance = new Chart(ctxProd, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Produksi (Meter)',
+                            data: prodData,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            display: true,
+                            color: '#1e293b',
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: function(value) {
+                                if (value >= 1000) return (value/1000).toFixed(1) + 'k';
+                                return value;
+                            },
+                            font: { size: 10, family: 'Inter', weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Total Meter' },
+                            suggestedMax: Math.max(...prodData) * 1.15 // Memberi space di atas agar datalabels tidak terpotong
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize Everything
+        window.onload = function() {
+            switchTab('oee'); // Set default tab to OEE
+            applyFilters();
+        };
+    </script>
+</body>
+</html>
