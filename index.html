@@ -304,7 +304,7 @@
             { tahun: 2026, bulan: 'AGUSTUS', mtbf: 265.55, mttr: 0.46, prod: 895496 },
             { tahun: 2026, bulan: 'SEPTEMBER', mtbf: 1221.70, mttr: 0.17, prod: 1025370 },
             { tahun: 2026, bulan: 'OKTOBER', mtbf: 576.67, mttr: 0.44, prod: 971957 },
-            { tahun: 2026, bulan: 'NOVEMBER', mtbf: 0.00, mttr: 0.00, prod: 593280 },
+            { tahun: 2026, bulan: 'NOVEMBER', mtbf: 0.00, mttr: 0.00, prod: 798189 },
         ];
 
         // DATA DEPARTEMEN (ALL MESIN)
@@ -348,7 +348,7 @@
             { tahun: 2026, bulan: 'AGUSTUS', a: 79.18, p: 95.32, q: 95.93, oee: 72.40 },
             { tahun: 2026, bulan: 'SEPTEMBER', a: 80.81, p: 93.90, q: 96.02, oee: 72.86 },
             { tahun: 2026, bulan: 'OKTOBER', a: 78.97, p: 95.87, q: 96.29, oee: 72.90 },
-            { tahun: 2026, bulan: 'NOVEMBER', a: 79.77, p: 95.45 , q: 96.33, oee: 73.35 },
+            { tahun: 2026, bulan: 'NOVEMBER', a: 80.10, p: 95.26 , q: 96.28, oee: 73.46 },
         ];
 
         const MACHINE_DATA = [
@@ -363,6 +363,7 @@
             { tahun: 2026, bulan: 'AGUSTUS', mc: 'AG800A', a: 85.06, p: 88.98, q: 96.07, oee: 72.73 },
             { tahun: 2026, bulan: 'SEPTEMBER', mc: 'AG800A', a: 86.76, p: 86.98, q: 95.89, oee: 72.36 },
             { tahun: 2026, bulan: 'OKTOBER', mc: 'AG800A', a: 86.41, p: 86.47, q: 96.27, oee: 71.93 },
+            { tahun: 2026, bulan: 'NOVEMBER', mc: 'AG800A', a: 89.09, p: 85.81, q: 95.95, oee: 73.36 },
 
             { tahun: 2026, bulan: 'JANUARI', mc: 'IZUMI 1', a: 82.63, p: 91.35, q: 95.33, oee: 71.95 },
             { tahun: 2026, bulan: 'FEBRUARI', mc: 'IZUMI 1', a: 80.53, p: 93.42, q: 95.90, oee: 72.15 },
@@ -374,7 +375,7 @@
             { tahun: 2026, bulan: 'AGUSTUS', mc: 'IZUMI 1', a: 79.20, p: 94.79, q: 95.93, oee: 72.02 },
             { tahun: 2026, bulan: 'SEPTEMBER', mc: 'IZUMI 1', a: 80.29, p: 93.99, q: 96.03, oee: 72.48 },
             { tahun: 2026, bulan: 'OKTOBER', mc: 'IZUMI 1', a: 78.12, p: 95.87, q: 96.29, oee: 72.11 },
-            { tahun: 2026, bulan: 'NOVEMBER', mc: 'IZUMI 1', a: 81.70, p: 94.47, q: 96.33, oee: 74.35 },
+            { tahun: 2026, bulan: 'NOVEMBER', mc: 'IZUMI 1', a: 82.32, p: 94.21, q: 96.28, oee: 74.67 },
 
             { tahun: 2026, bulan: 'JANUARI', mc: 'IZUMI 2', a: 79.34, p: 94.38, q: 95.43, oee: 71.46 },
             { tahun: 2026, bulan: 'FEBRUARI', mc: 'IZUMI 2', a: 79.95, p: 94.54, q: 95.92, oee: 72.51 },
@@ -386,7 +387,7 @@
             { tahun: 2026, bulan: 'AGUSTUS', mc: 'IZUMI 2', a: 78.43, p: 96.18, q: 95.92, oee: 72.35 },
             { tahun: 2026, bulan: 'SEPTEMBER', mc: 'IZUMI 2', a: 79.31, p: 94.98, q: 96.02, oee: 72.33 },
             { tahun: 2026, bulan: 'OKTOBER', mc: 'IZUMI 2', a: 78.71, p: 96.58, q: 96.30, oee: 73.20 },
-            { tahun: 2026, bulan: 'NOVEMBER', mc: 'IZUMI 2', a: 77.85, p: 96.38, q: 96.33, oee: 72.28 },
+            { tahun: 2026, bulan: 'NOVEMBER', mc: 'IZUMI 2', a: 77.12, p: 96.61, q: 96.29, oee: 71.74 },
 
             // --- DATA 2025 ---
             { tahun: 2025, bulan: 'AGUSTUS', mc: 'AG800A', a: 77.50, p: 91.04, q: 93.68, oee: 66.09 },
@@ -508,21 +509,21 @@
         ];
 
         const PARETO_DATA_2026 = [
-            { penyebab: 'Kress Skier', menit: 49703, persen: 34.82 },
-            { penyebab: 'Ganti Corak', menit: 39501, persen: 27.67 },
-            { penyebab: 'Putus Benang', menit: 28288, persen: 19.77 },
-            { penyebab: 'Doffing Benang', menit: 18715, persen: 13.11 },
-            { penyebab: 'Cucuk Skier', menit: 1954, persen: 1.37 },
-            { penyebab: 'Mecah Benang', menit: 952, persen: 0.67 },
-            { penyebab: 'Creeling Ulang', menit: 696, persen: 0.49 },
-            { penyebab: 'Adjust Skala', menit: 620, persen: 0.43 },
-            { penyebab: 'Breakdown Mechanical', menit: 483, persen: 0.34 },
-            { penyebab: 'Cucuk Ulang', menit: 426, persen: 0.30 },
-            { penyebab: 'Ganti Cucukan', menit: 353, persen: 0.25 },
+            { penyebab: 'Kress Skier', menit: 50971, persen: 34.89 },
+            { penyebab: 'Ganti Corak', menit: 40604, persen: 27.79 },
+            { penyebab: 'Putus Benang', menit: 28580, persen: 19.56 },
+            { penyebab: 'Doffing Benang', menit: 19146, persen: 13.10 },
+            { penyebab: 'Cucuk Skier', menit: 2055, persen: 1.41 },
+            { penyebab: 'Mecah Benang', menit: 952, persen: 0.65 },
+            { penyebab: 'Creeling Ulang', menit: 732, persen: 0.50 },
+            { penyebab: 'Adjust Skala', menit: 626, persen: 0.43 },
+            { penyebab: 'Breakdown Mechanical', menit: 483, persen: 0.33 },
+            { penyebab: 'Cucuk Ulang', menit: 426, persen: 0.29 },
+            { penyebab: 'Ganti Cucukan', menit: 353, persen: 0.24 },
             { penyebab: 'Tambah Helai', menit: 288, persen: 0.20 },
-            { penyebab: 'Breakdown Electrical', menit: 283, persen: 0.20 },
+            { penyebab: 'Breakdown Electrical', menit: 283, persen: 0.19 },
             { penyebab: 'Tarik Benang', menit: 220, persen: 0.15 },
-            { penyebab: 'Tunggu Beam Kosong', menit: 126, persen: 0.09 },
+            { penyebab: 'Tunggu Beam Kosong', menit: 172, persen: 0.12 },
             { penyebab: 'Cleaning', menit: 117, persen: 0.08 },
             { penyebab: 'Tunggu IKT', menit: 70, persen: 0.05 },
             { penyebab: 'Setting Stop Motion', menit: 21, persen: 0.01 }
@@ -635,28 +636,29 @@
 
         const PARETO_MACHINE_2026 = {
             'IZUMI 1': [
-                { penyebab: 'Kress Skier', menit: 20744 }, { penyebab: 'Putus Benang', menit: 15669 },
-                { penyebab: 'Ganti Corak', menit: 15184 }, { penyebab: 'Doffing Benang', menit: 8037 },
+                { penyebab: 'Kress Skier', menit: 21232 }, { penyebab: 'Putus Benang', menit: 15910 },
+                { penyebab: 'Ganti Corak', menit: 15423 }, { penyebab: 'Doffing Benang', menit: 8199 },
                 { penyebab: 'Cucuk Skier', menit: 692 }, { penyebab: 'Mecah Benang', menit: 579 },
-                { penyebab: 'Adjust Skala', menit: 431 }, { penyebab: 'Cucuk Ulang', menit: 279 },
-                { penyebab: 'Creeling Ulang', menit: 254 }, { penyebab: 'Breakdown Mechanical', menit: 251 },
+                { penyebab: 'Adjust Skala', menit: 437 }, { penyebab: 'Creeling Ulang', menit: 290 },
+                { penyebab: 'Cucuk Ulang', menit: 279 }, { penyebab: 'Breakdown Mechanical', menit: 251 }, 
                 { penyebab: 'Ganti Cucukan', menit: 239 }, { penyebab: 'Tambah Helai', menit: 167 },
                 { penyebab: 'Breakdown Electrical', menit: 144 }, { penyebab: 'Tunggu Beam Kosong', menit: 126 },
                 { penyebab: 'Cleaning', menit: 77 }, { penyebab: 'Tarik Benang', menit: 20 }
             ],
             'IZUMI 2': [
-                { penyebab: 'Ganti Corak', menit: 23969 }, { penyebab: 'Kress Skier', menit: 23393 },
-                { penyebab: 'Putus Benang', menit: 10667 }, { penyebab: 'Doffing Benang', menit: 8341 },
-                { penyebab: 'Cucuk Skier', menit: 737 }, { penyebab: 'Creeling Ulang', menit: 247 },
+                { penyebab: 'Ganti Corak', menit: 24621 }, { penyebab: 'Kress Skier', menit: 24197 },
+                { penyebab: 'Putus Benang', menit: 10765 }, { penyebab: 'Doffing Benang', menit: 8546 },
+                { penyebab: 'Cucuk Skier', menit: 811 }, { penyebab: 'Creeling Ulang', menit: 247 },
                 { penyebab: 'Adjust Skala', menit: 179 }, { penyebab: 'Mecah Benang', menit: 120 },
                 { penyebab: 'Breakdown Electrical', menit: 99 }, { penyebab: 'Tunggu Ikt', menit: 70 },
-                { penyebab: 'Cucuk Ulang', menit: 47 }, { penyebab: 'Breakdown Mechanical', menit: 44 },
-                { penyebab: 'Ganti Cucukan', menit: 42 },{ penyebab: 'Tambah Helai', menit: 41 },
-                { penyebab: 'Cleaning', menit: 40 }, { penyebab: 'Setting Stop Motion', menit: 21 }
+                { penyebab: 'Cucuk Ulang', menit: 47 }, { penyebab: 'Tunggu Beam Kosong', menit: 46 },
+                { penyebab: 'Breakdown Mechanical', menit: 44 },{ penyebab: 'Ganti Cucukan', menit: 42 },
+                { penyebab: 'Tambah Helai', menit: 41 },{ penyebab: 'Cleaning', menit: 40 }, 
+                { penyebab: 'Setting Stop Motion', menit: 21 },
             ],
             'AG800A': [
-                { penyebab: 'Kress Skier', menit: 4990 }, { penyebab: 'Doffing Benang', menit: 2337 },
-                { penyebab: 'Putus Benang', menit: 1892 }, { penyebab: 'Ganti Corak', menit: 924 },
+                { penyebab: 'Kress Skier', menit: 5118 }, { penyebab: 'Doffing Benang', menit: 2401 },
+                { penyebab: 'Putus Benang', menit: 1905 }, { penyebab: 'Ganti Corak', menit: 984 },
                 { penyebab: 'Cucuk Skier', menit: 525 }, { penyebab: 'Mecah Benang', menit: 253 },
                 { penyebab: 'Tarik Benang', menit: 200 }, { penyebab: 'Creeling Ulang', menit: 195 },
                 { penyebab: 'Breakdown Mechanical', menit: 188 }, { penyebab: 'Cucuk Ulang', menit: 100 },
